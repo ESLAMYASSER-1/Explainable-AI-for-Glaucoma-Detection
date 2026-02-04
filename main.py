@@ -44,6 +44,7 @@ trainer = Trainer(
     accelerator="cuda",
     devices=1,
     enable_progress_bar=True,
+       
 )
 
 tuner = Tuner(trainer)
