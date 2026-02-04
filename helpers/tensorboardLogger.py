@@ -1,7 +1,7 @@
 from lightning.pytorch.loggers import TensorBoardLogger
 from glob import glob
 from pathlib import Path
-def get_TBlogger(save_dir, experiment_name ):
+def get_TBlogger(save_dir, experiment_name, version=None):
     """Create tensorBoardLogger
 
     Args:
@@ -17,8 +17,9 @@ def get_TBlogger(save_dir, experiment_name ):
     
     # if not Path.exists(Path(save_dir)/experiment_name):
     #     Path.mkdir(Path(save_dir)/experiment_name)
+    if not version:
+        version = len(glob(f"{save_dir}/{experiment_name}/*"))+1
     
-    version = len(glob(f"{save_dir}/{experiment_name}/*"))+1
     return  TensorBoardLogger(
                                 save_dir=save_dir,
                                 name=experiment_name,

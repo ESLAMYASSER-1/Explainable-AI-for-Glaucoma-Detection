@@ -9,7 +9,7 @@ class Settings(BaseSettings):
 
     DATASET_DIR:str 
     CSV_FILE:str = "metadata - standardized.csv"
-    FUNDUS_DIR:str = "full-fundus/"
+    FUNDUS_DIR:str = "full-fundus"
 
     TRAIN_SIZE:float = 0.6
     INCLUDE_TEST:bool = False

@@ -6,6 +6,7 @@ import torchvision.transforms as trns
 import pytorch_lightning as pl
 from pytorch_lightning.tuner import Tuner
 from pytorch_lightning import Trainer
+from pytorch_lightning.callbacks import EarlyStopping
 
 import torchvision.models as models
 
@@ -38,12 +39,21 @@ train_loader, val_loader, test_loader = dataModel.get_loaders(settings.BATCH_SIZ
 resnet50 = models.resnet50(weights=models.ResNet50_Weights.IMAGENET1K_V2)
 model = ModelCoreWOscheduler(resnet50, settings.NUM_EPOCHS)
 
+early_stop_callback = EarlyStopping(
+    monitor="val_acc",    # metric to monitor
+    patience=10,            # number of epochs with no improvement
+    mode="max",            # minimize the monitored metric
+    verbose=True
+)
+
 trainer = Trainer(
     max_epochs=settings.NUM_EPOCHS,
+    min_epochs = 15,
     logger=TBlogger,
     accelerator="cuda",
     devices=1,
     enable_progress_bar=True,
+    callbacks=[early_stop_callback],
 )
 
 tuner = Tuner(trainer)
@@ -63,6 +73,7 @@ print(best_lr)
 
 
 model = ModelCore(resnet50, settings.NUM_EPOCHS)
+model.lr = best_lr
 
 trainer.fit(model= model, train_dataloaders=train_loader, val_dataloaders=val_loader)
 
