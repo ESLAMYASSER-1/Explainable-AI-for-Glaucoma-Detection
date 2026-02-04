@@ -7,3 +7,4 @@ tensorboard
 lightning
 pydantic 
 pydantic-settings
+torchcam 
