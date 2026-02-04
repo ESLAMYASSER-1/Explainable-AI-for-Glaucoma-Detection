@@ -4,7 +4,12 @@ from utils import ModelCore
 
 import glob
 import torch
+from torchinfo import summary
+import torch.nn.functional as F
 import torchvision.models as models
+from torchcam.methods import GradCAMpp
+import numpy as np
+import matplotlib.pyplot as plt
 import albumentations as A
 from albumentations.pytorch import ToTensorV2
 
@@ -44,8 +49,6 @@ trasnformations =A.Compose([
 ])
 
 train_loader, val_loader, test_loader = dataModel.get_loaders(settings.BATCH_SIZE, trasnformations)
-
-
 
 if settings.USE_ALL_EXPERIMENTS_TO_PREDICT:
     experiments = glob.glob("../logs/*")
@@ -87,21 +90,42 @@ for PREDICT_EXPERIMENT_NAME in experiments:
     model_lst = [("resnet50", resnet50), ("resnet101", resnet101), ("resnet152", resnet152), ("mobileNetv3", mobileNetv3)]
     for model_name, model in model_lst:
         if model_name not in passed_models:
-            with torch.inference_mode():
-                model.to("cuda")
-                model.eval()
-                TP = 0
-                TOTP = 0
-                for i, l in val_loader:
-                    l= l.long()
-                    logits= model.model(i.to("cuda"))
-                    logits = logits.argmax(axis=1)
-                    TP += sum(logits.to("cpu") == l)
-                    TOTP += len(l)
-                print(f"{"#"*20} Model Name: {model_name} {"#"*20}\nTrue predictions: {TP},\nTotal predictions: {TOTP},\nAccuracy: {(TP/TOTP)}%")
-                print()
-                print()
+            
+            model.to("cuda")
+            model.eval()
+            # summary(model, input_size=(settings.BATCH_SIZE, 3, 224, 224))
+            cam_extractor = GradCAMpp(model.model, target_layer='layer4')
+            TP = 0
+            TOTP = 0
+            for images, labels in val_loader:
+                images = images.to("cuda")
+                labels = labels.long().to("cuda")
+                
+                # Forward pass
+                outputs = model(images)
+                preds = outputs.argmax(dim=1)
+                
+                for i in range(len(images)):
+                    cam = cam_extractor(preds[i].item(), outputs[i].unsqueeze(0), retain_graph=True)
+                    # cam is a 2D tensor (H, W), resize to original image size if needed
+                    
+                    cam = cam[0][0].unsqueeze(0).unsqueeze(0)
+                    
+                    cam = F.interpolate(cam, size=(224, 224), mode='bilinear', align_corners=False)
 
-
-
-
+                    cam = cam.squeeze().cpu().numpy()
+                    # Visualize overlay
+                    img = images[i].permute(1, 2, 0).cpu().numpy()  # C,H,W -> H,W,C
+                    img = img * np.array([0.229, 0.224, 0.225]) + np.array([0.485, 0.456, 0.406])  # Denormalize
+                    img = np.clip(img, 0, 1)
+                    
+                    plt.imshow(img)
+                    plt.imshow(cam, cmap='jet', alpha=0.5)  # Overlay CAM
+                    plt.title(f"Pred: {preds[i].item()}, True: {labels[i].item()}")
+                    plt.axis('off')
+                    plt.show()
+                TP += sum(preds.to("cpu") == labels.to("cpu"))
+                TOTP += len(labels)
+            print(f"{"#"*20} Model Name: {model_name} {"#"*20}\nTrue predictions: {TP},\nTotal predictions: {TOTP},\nAccuracy: {(TP/TOTP)}%")
+            print()
+            print()
