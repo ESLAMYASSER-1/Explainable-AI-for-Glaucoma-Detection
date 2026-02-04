@@ -7,6 +7,9 @@ class Settings(BaseSettings):
     LOGGING_DIR:str = "../logs"
     EXPERIMENT_NAME:str
 
+    USE_ALL_EXPERIMENTS_TO_PREDICT:bool = False
+    PREDICT_EXPERIMENT_NAME:str
+
     DATASET_DIR:str 
     CSV_FILE:str = "metadata - standardized.csv"
     FUNDUS_DIR:str = "full-fundus"
