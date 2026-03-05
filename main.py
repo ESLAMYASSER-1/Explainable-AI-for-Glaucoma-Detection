@@ -53,11 +53,7 @@ trainer = Trainer(
     accelerator="cuda",
     devices=1,
     enable_progress_bar=True,
-<<<<<<< HEAD
     callbacks=[early_stop_callback],
-=======
-       
->>>>>>> 9de42b7 (old one)
 )
 
 tuner = Tuner(trainer)
