@@ -81,6 +81,10 @@
 
 
 
-from utils import load_models
+# from utils import load_models
 
-print(len(load_models("../logs/nighnth_try_pretrained", ["resnet50", "resnet152"], True)[0]), len(load_models("../logs/nighnth_try_pretrained", ["resnet50", "resnet152"], True)[1]))
+# print(len(load_models("../logs/nighnth_try_pretrained", ["resnet50", "resnet152"], True)[0]), len(load_models("../logs/nighnth_try_pretrained", ["resnet50", "resnet152"], True)[1]))
+
+from domain.CoreModel import predict
+
+predict()

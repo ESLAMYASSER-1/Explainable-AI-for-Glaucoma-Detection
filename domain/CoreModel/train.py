@@ -15,7 +15,7 @@ import logging
 setup_logging()
 
 logger = logging.getLogger(__name__)
-logger.info("Training cycle has begun")
+logger.info("Training cycle has started")
 
 settings = Settings()
 
