@@ -16,7 +16,7 @@ class ModelCore(pl.LightningModule):
             for name, param in self.model.named_parameters():
                 if ("resnet" in model_name and "layer4" in name) \
                 or ("efficientnet" in model_name and any(sub in name for sub in [ "features.7", "features.8", ]))\
-                or ("mobilenet" in model_name and any(sub in name for sub in [ "features.16", "features.16", ])):
+                or (("mobilenet" in model_name or "mobileNet" in model_name) and any(sub in name for sub in [ "features.16", "features.16", ])):
                     param.requires_grad = False
                         
                     
@@ -30,7 +30,7 @@ class ModelCore(pl.LightningModule):
         elif ("efficientnet" in model_name):
             self.model.classifier[-1]= torch.nn.Linear(self.model.classifier[-1].in_features, 2)
 
-        elif ("mobilenet" in model_name):
+        elif ("mobilenet" in model_name or "mobileNet" in model_name):
             self.model.classifier[-1]= torch.nn.Linear(self.model.classifier[-1].in_features, 2)
         
             

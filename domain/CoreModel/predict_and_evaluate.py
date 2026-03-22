@@ -20,7 +20,7 @@ settings = Settings()
 
 TBlogger = get_TBlogger(settings.LOGGING_DIR, settings.EXPERIMENT_NAME)
 
-def predict():
+def predict(modelList: list):
     dataModel = DataModel(settings.DATASET_DIR, 
                         settings.CSV_FILE, 
                         settings.FUNDUS_DIR, 
@@ -59,12 +59,14 @@ def predict():
     for PREDICT_EXPERIMENT_NAME in experiments:
         print("#"*40, "Experiment Name:", PREDICT_EXPERIMENT_NAME.split("/")[-1], "#"*40)
 
-        model_lst, passed_models = load_models(modelList=["resnet152", "resnet101", "resnet50", "mobileNetv3", "efficientnet_b4"], pretrained=True, EXPERIMENT_NAME=PREDICT_EXPERIMENT_NAME)
+        model_lst, passed_models = load_models(modelList=modelList, pretrained=True, EXPERIMENT_NAME=PREDICT_EXPERIMENT_NAME)
         val_results_df = []
         test_results_df= []
     
         for model_name, model in model_lst:
             if model_name not in passed_models:
+                print("#"*20, "Model Name:", model_name, "#"*20)
+
                 with torch.inference_mode():
                     model.to("cuda")
                     model.eval()
@@ -86,7 +88,6 @@ def predict():
                     prob_list[np.where(prob_list >= thres_val)] = 1
                     prob_list[np.where(prob_list != 1)] = 0
 
-                    print(sum(prob_list == label_list)/ len(label_list))
 
                     tn, fp, fn, tp = metrics.confusion_matrix(label_list, prob_list).ravel()
                     print(f'AUROC on the validation set is {round(metrics.auc(fpr, tpr), 3)}')
