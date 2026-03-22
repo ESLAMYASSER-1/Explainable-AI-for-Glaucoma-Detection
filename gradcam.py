@@ -1,13 +1,10 @@
 from helpers import get_TBlogger, Settings
 from models import DataModel
-from utils import ModelCore
-
+from utils import load_models
 import glob
 from pathlib import Path
-import torch
 # from torchinfo import summary
 import torch.nn.functional as F
-import torchvision.models as models
 from torchcam.methods import GradCAMpp
 import numpy as np
 import matplotlib.pyplot as plt
@@ -85,47 +82,7 @@ else:
 for PREDICT_EXPERIMENT_NAME in experiments:
     print("#"*40, "Experiment Name:", PREDICT_EXPERIMENT_NAME.split("/")[-1], "#"*40)
 
-    resnet50 = models.resnet50(weights=None)
-    resnet101 = models.resnet101(weights=None)
-    resnet152 = models.resnet152(weights=None)
-    mobileNetv3 = models.mobilenet_v3_large(weights= None)
-    efficientnet_b4 = models.efficientnet_b4(weights= models.EfficientNet_B4_Weights.DEFAULT)
-
-    passed_models = ["mobileNetv3", "efficientnet_b4"] # TODO: always except efficientnet_b4, and mobileNetv3 not good at axplainability 
-   
-    try:
-        resnet50 = ModelCore.load_from_checkpoint(glob.glob(f"{PREDICT_EXPERIMENT_NAME}/resnet50/checkpoints/*.ckpt")[0],model = resnet50, num_epochs= settings.NUM_EPOCHS)
-    except:
-        print(f"❌ resnet50 not available in Experiment: {PREDICT_EXPERIMENT_NAME.split("/")[-1]}")
-        passed_models.append("resnet50")
-
-    try:
-        resnet101 = ModelCore.load_from_checkpoint(glob.glob(f"{PREDICT_EXPERIMENT_NAME}/resnet101/checkpoints/*.ckpt")[0],model = resnet101, num_epochs= settings.NUM_EPOCHS)
-    except:
-        print(f"❌ resnet101 not available in Experiment: {PREDICT_EXPERIMENT_NAME.split("/")[-1]}")
-        passed_models.append("resnet101")
-
-    try:
-        resnet152 = ModelCore.load_from_checkpoint(glob.glob(f"{PREDICT_EXPERIMENT_NAME}/resnet152/checkpoints/*.ckpt")[0],model = resnet152, num_epochs= settings.NUM_EPOCHS)
-    except:
-        print(f"❌ resnet152 not available in Experiment: {PREDICT_EXPERIMENT_NAME.split("/")[-1]}")
-        passed_models.append("resnet152")
-
-    try:
-        mobileNetv3 = ModelCore.load_from_checkpoint(glob.glob(f"{PREDICT_EXPERIMENT_NAME}/mobileNetv3/checkpoints/*.ckpt")[0],model = mobileNetv3, num_epochs= settings.NUM_EPOCHS)
-    except:
-        print(f"❌ mobileNetv3 not available in Experiment: {PREDICT_EXPERIMENT_NAME.split("/")[-1]}")
-        passed_models.append("mobileNetv3")
-
-    try:
-        efficientnet_b4 = ModelCore.load_from_checkpoint(glob.glob(f"{PREDICT_EXPERIMENT_NAME}/efficientnet_b4/checkpoints/*.ckpt")[0],model = efficientnet_b4, num_epochs= settings.NUM_EPOCHS)
-    except:
-        print(f"❌ efficientnet_b4 not available in Experiment: {PREDICT_EXPERIMENT_NAME.split("/")[-1]}")
-        passed_models.append("efficientnet_b4")
-
-
-    model_lst = [("resnet152", resnet152), ("resnet50", resnet50), ("efficientnet_b4", efficientnet_b4), ("mobileNetv3", mobileNetv3), ("resnet101", resnet101),]
-    
+    model_lst, passed_models = load_models(PREDICT_EXPERIMENT_NAME, ["resnet50"], True)
     for model_name, model in model_lst:
         if model_name not in passed_models:
             # print([f"layer name: {name}\n" for (name, module) in model.model.named_children()], sep="\n")
