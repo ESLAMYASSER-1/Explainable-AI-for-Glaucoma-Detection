@@ -7,4 +7,5 @@ tensorboard
 lightning
 pydantic 
 pydantic-settings
-torchcam 
+torchcam
+gradio
