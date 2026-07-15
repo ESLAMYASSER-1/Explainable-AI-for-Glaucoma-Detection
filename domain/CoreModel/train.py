@@ -2,20 +2,20 @@ from helpers import get_TBlogger, Settings, setup_logging
 from models import DataModel
 from utils import ModelCore
 
-import torchvision.transforms as trns
 import albumentations as A
 from albumentations.pytorch import ToTensorV2
 from pytorch_lightning import Trainer
 from pytorch_lightning.callbacks import EarlyStopping
 
 import torchvision.models as models
+from utils import load_models
 
 import logging
 
 setup_logging()
 
 logger = logging.getLogger(__name__)
-logger.info("Application started")
+logger.info("Training cycle has started")
 
 settings = Settings()
 
@@ -28,18 +28,8 @@ dataModel = DataModel(settings.DATASET_DIR,
                       settings.INCLUDE_TEST)
 
 
-# trasnformations = trns.Compose([
-#     trns.RandomResizedCrop(224, scale=(0.9, 1.0)),
-#     trns.RandomHorizontalFlip(p=0.5),
-#     trns.RandomRotation(10),
-#     trns.ColorJitter(0.1, 0.1, 0.05, 0.01),
-#     trns.ToTensor(),
-#     trns.Normalize(mean=[0.485, 0.456, 0.406],
-#                    std=[0.229, 0.224, 0.225]),
-# ])
-
 trasnformations =A.Compose([
-    A.RandomResizedCrop((224, 224), scale=(0.9, 1.0)),
+    A.RandomResizedCrop((64, 64), scale=(0.9, 1.0)),
     A.HorizontalFlip(p=0.5),
     A.Rotate(limit=10, p=0.5),
     A.CLAHE(clip_limit=2.0, tile_grid_size=(8, 8), p=0.7),
@@ -58,19 +48,14 @@ trasnformations =A.Compose([
 ])
 
 train_loader, val_loader, test_loader = dataModel.get_loaders(settings.BATCH_SIZE, trasnformations)
-img = next(iter(train_loader))[0][0]
 
-resnet50 = models.resnet50(weights=None)
-resnet101 = models.resnet101(weights=None)
-resnet152 = models.resnet152(weights=None)
-mobileNetv3 = models.mobilenet_v3_large(weights= None)
-model_lst = [("resnet50", resnet50), ("resnet101", resnet101), ("resnet152", resnet152), ("mobileNetv3", mobileNetv3)]
 
+model_lst, passed_models = load_models(pretrained=False, EXPERIMENT_NAME=settings.EXPERIMENT_NAME)
 
 for model_name, backbone in model_lst:
     TBlogger = get_TBlogger(settings.LOGGING_DIR, settings.EXPERIMENT_NAME, version=model_name)
 
-    model = ModelCore(backbone, settings.NUM_EPOCHS,2e-4)
+    model = ModelCore(model_name, backbone, settings.NUM_EPOCHS,settings.LR)
 
     early_stop_callback = EarlyStopping(
         monitor="val_loss",    # metric to monitor

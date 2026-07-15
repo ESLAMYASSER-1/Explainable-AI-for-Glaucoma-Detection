@@ -19,6 +19,7 @@ class Settings(BaseSettings):
     BATCH_SIZE:int = 16
 
     NUM_EPOCHS:int 
+    LR:float = 0.0002
 
     model_config = SettingsConfigDict(
         env_file=".env"

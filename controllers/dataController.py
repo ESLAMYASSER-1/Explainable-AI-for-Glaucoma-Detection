@@ -76,9 +76,9 @@ class DataController:
         data = SMGD(self.get_full_path(self.Fundus_dir), X, y, trasnformations)
 
         if partition_type == "train":
-            return DataLoader(data, batch_size=batch_size, shuffle=True, pin_memory=True, num_workers=4)
+            return DataLoader(data, batch_size=batch_size, shuffle=True, pin_memory=True)
         
-        return DataLoader(data, batch_size=batch_size, pin_memory=True, num_workers=4)
+        return DataLoader(data, batch_size=batch_size, pin_memory=True)
 
 
     
