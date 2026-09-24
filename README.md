@@ -1,6 +1,5 @@
 # Explainable AI for Glaucoma Detection
 
-[![Ask DeepWiki](https://devin.ai/assets/askdeepwiki.png)](https://deepwiki.com/ESLAMYASSER-1/Eng_Mariam_EL-Desoky_XAI_Gluacoma)
 
 This repository contains a comprehensive system for glaucoma detection from fundus images using deep learning. It features an interactive dashboard built with Gradio that not only provides a diagnosis but also explains the model's decision-making process using various Explainable AI (XAI) techniques. The project includes the full pipeline for data handling, model training, evaluation, and visualization.
 
